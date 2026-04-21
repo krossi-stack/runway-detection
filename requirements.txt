@@ -1,0 +1,11 @@
+# Core
+opencv-python>=4.8.0
+numpy>=1.24.0
+ultralytics>=8.0.200
+python-dotenv>=1.0.0
+
+# Data collection (X-Plane screen capture)
+mss>=9.0.0
+
+# Jetson deployment (install PyTorch separately per NVIDIA docs)
+# tensorrt  -- pre-installed on JetPack
