@@ -5,9 +5,9 @@ Captures screen frames and X-Plane telemetry simultaneously, saving them
 with synchronized timestamps for training data generation.
 
 Controls:
-  F9  = Start/resume capture
-  F10 = Pause capture
-  F12 = Stop and save session
+  1 = Start/resume capture
+  2 = Pause capture
+  3 = Stop and save session
 
 X-Plane setup:
   Settings > Data Output > check "Internet via UDP" for:
@@ -116,22 +116,22 @@ def main():
         nonlocal capturing
         if not capturing:
             capturing = True
-            print("\n>> CAPTURING  (F10=pause, F12=stop)")
+            print("\n>> CAPTURING  (2=pause, 3=stop)")
 
     def on_pause():
         nonlocal capturing
         if capturing:
             capturing = False
-            print("\n>> PAUSED     (F9=resume, F12=stop)")
+            print("\n>> PAUSED     (1=resume, 3=stop)")
 
     def on_stop():
         nonlocal running
         running = False
         print("\n>> STOPPING...")
 
-    keyboard.on_press_key("f9", lambda _: on_start(), suppress=False)
-    keyboard.on_press_key("f10", lambda _: on_pause(), suppress=False)
-    keyboard.on_press_key("f12", lambda _: on_stop(), suppress=False)
+    keyboard.on_press_key("1", lambda _: on_start(), suppress=False)
+    keyboard.on_press_key("2", lambda _: on_pause(), suppress=False)
+    keyboard.on_press_key("3", lambda _: on_stop(), suppress=False)
 
     print(f"Session: {session_id}")
     print(f"Saving to: {session_dir}")
@@ -139,11 +139,11 @@ def main():
     print(f"Listening for X-Plane UDP on {XPLANE_UDP_IP}:{XPLANE_UDP_PORT}")
     print()
     print("Controls:")
-    print("  F9  = Start / resume capture")
-    print("  F10 = Pause capture")
-    print("  F12 = Stop and save session")
+    print("  1 = Start / resume capture")
+    print("  2 = Pause capture")
+    print("  3 = Stop and save session")
     print()
-    print(">> PAUSED     (press F9 to start capturing)")
+    print(">> PAUSED     (press 1 to start capturing)")
 
     csv_file = open(telemetry_path, "w", newline="")
     writer = csv.writer(csv_file)

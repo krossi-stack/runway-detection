@@ -15,7 +15,7 @@ from config.settings import DATASETS_DIR, INFERENCE_SIZE
 
 def main():
     parser = argparse.ArgumentParser(description="Train runway segmentation model")
-    parser.add_argument("--model", default="yolov8n-seg.pt", help="Base model")
+    parser.add_argument("--model", default="yolo11n-seg.pt", help="Base model")
     parser.add_argument("--epochs", type=int, default=100)
     parser.add_argument("--batch", type=int, default=8)
     parser.add_argument("--imgsz", type=int, default=INFERENCE_SIZE)
@@ -23,7 +23,7 @@ def main():
     parser.add_argument("--name", default="runway_seg", help="Run name")
     args = parser.parse_args()
 
-    dataset_yaml = args.dataset or str(Path(DATASETS_DIR) / "runway" / "dataset.yaml")
+    dataset_yaml = args.dataset or str(Path(DATASETS_DIR) / "data.yaml")
 
     from ultralytics import YOLO
     model = YOLO(args.model)

@@ -1,13 +1,11 @@
 __pycache__/
 *.pyc
 .env
-*.pt
 *.onnx
 *.engine
 data/raw_frames/
 data/labels/
 data/datasets/
-models/
 logs/
 *.ts
 *.m3u8

@@ -19,7 +19,7 @@ XPLANE_UDP_IP = os.getenv("XPLANE_UDP_IP", "0.0.0.0")
 XPLANE_UDP_PORT = int(os.getenv("XPLANE_UDP_PORT", "49003"))
 XPLANE_SEND_PORT = int(os.getenv("XPLANE_SEND_PORT", "49000"))  # X-Plane's listening port for RREF
 XPLANE_SCREEN_REGION = os.getenv("XPLANE_SCREEN_REGION", "")  # x,y,w,h or empty for full screen
-CAPTURE_FPS = int(os.getenv("CAPTURE_FPS", "10"))
+CAPTURE_FPS = float(os.getenv("CAPTURE_FPS", "0.1"))  # frames per second (0.1 = one frame every 10s)
 XPLANE_FOV_DEG = float(os.getenv("XPLANE_FOV_DEG", "80.0"))  # fallback if RREF read fails
 
 # --- X-Plane Paths ---
