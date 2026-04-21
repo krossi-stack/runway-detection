@@ -4,6 +4,11 @@ X-Plane screen capture + UDP telemetry recorder.
 Captures screen frames and X-Plane telemetry simultaneously, saving them
 with synchronized timestamps for training data generation.
 
+Controls:
+  F9  = Start/resume capture
+  F10 = Pause capture
+  F12 = Stop and save session
+
 X-Plane setup:
   Settings > Data Output > check "Internet via UDP" for:
     - Index 20: latitude, longitude, altitude (MSL & AGL)
@@ -22,6 +27,7 @@ from datetime import datetime
 from pathlib import Path
 
 import cv2
+import keyboard
 import mss
 import numpy as np
 
@@ -103,12 +109,41 @@ def main():
     region = get_screen_region()
     interval = 1.0 / CAPTURE_FPS
     frame_count = 0
+    capturing = False
+    running = True
+
+    def on_start():
+        nonlocal capturing
+        if not capturing:
+            capturing = True
+            print("\n>> CAPTURING  (F10=pause, F12=stop)")
+
+    def on_pause():
+        nonlocal capturing
+        if capturing:
+            capturing = False
+            print("\n>> PAUSED     (F9=resume, F12=stop)")
+
+    def on_stop():
+        nonlocal running
+        running = False
+        print("\n>> STOPPING...")
+
+    keyboard.on_press_key("f9", lambda _: on_start(), suppress=False)
+    keyboard.on_press_key("f10", lambda _: on_pause(), suppress=False)
+    keyboard.on_press_key("f12", lambda _: on_stop(), suppress=False)
 
     print(f"Session: {session_id}")
     print(f"Saving to: {session_dir}")
     print(f"Capture FPS: {CAPTURE_FPS}")
     print(f"Listening for X-Plane UDP on {XPLANE_UDP_IP}:{XPLANE_UDP_PORT}")
-    print("Press Ctrl+C to stop.\n")
+    print()
+    print("Controls:")
+    print("  F9  = Start / resume capture")
+    print("  F10 = Pause capture")
+    print("  F12 = Stop and save session")
+    print()
+    print(">> PAUSED     (press F9 to start capturing)")
 
     csv_file = open(telemetry_path, "w", newline="")
     writer = csv.writer(csv_file)
@@ -123,8 +158,13 @@ def main():
         with mss.mss() as sct:
             monitor = region or sct.monitors[1]
 
-            while True:
+            while running:
                 t0 = time.perf_counter()
+
+                if not capturing:
+                    time.sleep(0.05)
+                    continue
+
                 timestamp = time.time()
 
                 img = np.array(sct.grab(monitor))
@@ -158,10 +198,11 @@ def main():
                     time.sleep(sleep_time)
 
     except KeyboardInterrupt:
-        print(f"\nStopped. Captured {frame_count} frames.")
+        pass
     finally:
         stop_event.set()
         csv_file.close()
+        keyboard.unhook_all()
 
         metadata = {
             "session_id": session_id,
@@ -173,6 +214,8 @@ def main():
         with open(metadata_path, "w") as f:
             json.dump(metadata, f, indent=2)
 
+        print(f"\nSession complete: {frame_count} frames captured.")
+        print(f"Frames:    {frames_dir}")
         print(f"Telemetry: {telemetry_path}")
         print(f"Metadata:  {metadata_path}")
 

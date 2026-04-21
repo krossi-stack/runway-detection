@@ -17,8 +17,13 @@ IMAGE_HEIGHT = int(os.getenv("IMAGE_HEIGHT", "1080"))
 # --- X-Plane Data Collection ---
 XPLANE_UDP_IP = os.getenv("XPLANE_UDP_IP", "0.0.0.0")
 XPLANE_UDP_PORT = int(os.getenv("XPLANE_UDP_PORT", "49003"))
+XPLANE_SEND_PORT = int(os.getenv("XPLANE_SEND_PORT", "49000"))  # X-Plane's listening port for RREF
 XPLANE_SCREEN_REGION = os.getenv("XPLANE_SCREEN_REGION", "")  # x,y,w,h or empty for full screen
 CAPTURE_FPS = int(os.getenv("CAPTURE_FPS", "10"))
+XPLANE_FOV_DEG = float(os.getenv("XPLANE_FOV_DEG", "80.0"))  # fallback if RREF read fails
+
+# --- X-Plane Paths ---
+XPLANE_APT_DAT = os.getenv("XPLANE_APT_DAT", "")  # path to X-Plane's apt.dat file
 
 # --- Detection / Segmentation ---
 MODEL_PATH = os.getenv("MODEL_PATH", "models/runway_seg.pt")
