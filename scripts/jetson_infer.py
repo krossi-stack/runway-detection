@@ -5,6 +5,7 @@ Reads RTSP from the Marshall CV574 and runs YOLOv8-seg inference,
 overlaying the runway mask and estimated altitude/alignment.
 """
 
+import os
 import time
 import sys
 from pathlib import Path
@@ -73,10 +74,12 @@ def main():
     print(f"Loading model from {MODEL_PATH}...")
     segmenter = RunwaySegmenter(MODEL_PATH, CONFIDENCE_THRESHOLD, INFERENCE_SIZE)
 
+    detect_every = int(os.getenv("DETECT_EVERY_N_FRAMES", "3"))
     frame_count = 0
     fps_start = time.perf_counter()
+    last_result = None
 
-    print("Running inference. Press 'q' to quit.\n")
+    print(f"Running inference (every {detect_every} frames). Press 'q' to quit.\n")
 
     try:
         while True:
@@ -88,8 +91,10 @@ def main():
                 cam = CameraStream(RTSP_URL)
                 continue
 
-            result = segmenter.predict(frame)
-            display = RunwaySegmenter.draw_mask(frame, result)
+            if frame_count % detect_every == 0:
+                last_result = segmenter.predict(frame)
+
+            display = RunwaySegmenter.draw_mask(frame, last_result)
 
             frame_count += 1
             elapsed = time.perf_counter() - fps_start
