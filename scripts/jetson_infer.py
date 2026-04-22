@@ -26,9 +26,21 @@ from config.settings import (
 )
 
 
+def _resolve_model_path(model_path: str) -> str:
+    """Prefer a TensorRT engine if one exists alongside the .pt file."""
+    p = Path(model_path)
+    if p.suffix == ".pt":
+        engine = p.with_suffix(".engine")
+        if engine.exists():
+            print(f"Found TensorRT engine: {engine}")
+            return str(engine)
+    return model_path
+
+
 class RunwaySegmenter:
     def __init__(self, model_path: str, conf: float = 0.5, imgsz: int = 640):
         from ultralytics import YOLO
+        model_path = _resolve_model_path(model_path)
         self.model = YOLO(model_path)
         self.conf = conf
         self.imgsz = imgsz

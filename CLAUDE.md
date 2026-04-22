@@ -7,7 +7,8 @@ Real-time runway segmentation for aircraft approach/landing using Jetson Nano 8G
 - `config/settings.py` -- all configuration via environment variables with defaults
 - `scripts/xplane_capture.py` -- screen capture + X-Plane UDP telemetry recorder
 - `scripts/train.py` -- YOLOv8-seg training wrapper
-- `scripts/jetson_infer.py` -- real-time RTSP inference pipeline for Jetson
+- `scripts/jetson_infer.py` -- real-time RTSP inference pipeline for Jetson (auto-prefers .engine over .pt)
+- `scripts/export_tensorrt.py` -- export .pt to TensorRT engine (run on Jetson)
 
 ## Training Data
 
@@ -38,6 +39,9 @@ python scripts/xplane_capture.py
 # Train model
 python scripts/train.py --epochs 100 --batch 8
 
-# Run inference on Jetson
+# Export to TensorRT (run ON Jetson, takes 10-30 min)
+python scripts/export_tensorrt.py --imgsz 320 --fp16
+
+# Run inference on Jetson (auto-loads .engine if present)
 python scripts/jetson_infer.py
 ```
