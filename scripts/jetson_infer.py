@@ -6,6 +6,7 @@ overlaying the runway mask and estimated altitude/alignment.
 """
 
 import os
+import threading
 import time
 import sys
 from pathlib import Path
@@ -42,28 +43,44 @@ class RunwaySegmenter:
         return results[0] if results else None
 
     @staticmethod
-    def draw_mask(frame: np.ndarray, result, color=(0, 255, 0), alpha=0.4):
+    def draw_mask(frame: np.ndarray, result, color=(0, 255, 0), thickness=2):
         if result is None or result.masks is None:
             return frame
-        overlay = frame.copy()
         for mask_data in result.masks.data:
             mask = mask_data.cpu().numpy().astype(np.uint8)
             mask = cv2.resize(mask, (frame.shape[1], frame.shape[0]))
-            overlay[mask > 0] = (
-                overlay[mask > 0] * (1 - alpha) + np.array(color) * alpha
-            ).astype(np.uint8)
-        return overlay
+            contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+            cv2.drawContours(frame, contours, -1, color, thickness)
+        return frame
 
 
 class CameraStream:
+    """Threaded RTSP reader that always holds the latest frame, dropping old ones."""
+
     def __init__(self, url: str):
         self.cap = cv2.VideoCapture(url, cv2.CAP_FFMPEG)
         self.cap.set(cv2.CAP_PROP_BUFFERSIZE, 1)
+        self.lock = threading.Lock()
+        self.latest_frame = None
+        self.running = True
+        self.thread = threading.Thread(target=self._reader, daemon=True)
+        self.thread.start()
+
+    def _reader(self):
+        while self.running:
+            ret, frame = self.cap.read()
+            if ret:
+                with self.lock:
+                    self.latest_frame = frame
 
     def read(self):
-        return self.cap.read()
+        with self.lock:
+            frame = self.latest_frame
+        return (frame is not None), frame
 
     def release(self):
+        self.running = False
+        self.thread.join(timeout=2)
         self.cap.release()
 
 
