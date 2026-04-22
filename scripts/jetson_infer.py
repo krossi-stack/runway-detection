@@ -56,13 +56,35 @@ class RunwaySegmenter:
         )
         return results[0] if results else None
 
+    @staticmethod
+    def _fit_trapezoid(contour):
+        """Approximate a contour to a 4-point trapezoid."""
+        hull = cv2.convexHull(contour)
+        peri = cv2.arcLength(hull, True)
+        epsilon = 0.02 * peri
+        for _ in range(50):
+            approx = cv2.approxPolyDP(hull, epsilon, True)
+            if len(approx) == 4:
+                return approx
+            if len(approx) > 4:
+                epsilon *= 1.1
+            else:
+                epsilon *= 0.9
+        if len(approx) != 4:
+            approx = cv2.approxPolyDP(hull, 0.05 * peri, True)
+        if len(approx) < 4:
+            return None
+        if len(approx) > 4:
+            rect = cv2.minAreaRect(hull)
+            box = cv2.boxPoints(rect)
+            return np.intp(box).reshape(-1, 1, 2)
+        return approx
+
     def draw_mask(self, frame: np.ndarray, result, color=(0, 255, 0), thickness=2):
         if result is None or result.masks is None:
             if self._smooth_mask is not None:
                 self._smooth_mask *= (1 - MASK_SMOOTHING_ALPHA)
-                binary = (self._smooth_mask > 0.5).astype(np.uint8)
-                contours, _ = cv2.findContours(binary, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-                cv2.drawContours(frame, contours, -1, color, thickness)
+                self._draw_trapezoid(frame, self._smooth_mask, color, thickness)
             return frame
         h, w = frame.shape[:2]
         combined = np.zeros((h, w), dtype=np.float32)
@@ -74,10 +96,20 @@ class RunwaySegmenter:
         else:
             self._smooth_mask = (MASK_SMOOTHING_ALPHA * combined
                                  + (1 - MASK_SMOOTHING_ALPHA) * self._smooth_mask)
-        binary = (self._smooth_mask > 0.5).astype(np.uint8)
-        contours, _ = cv2.findContours(binary, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-        cv2.drawContours(frame, contours, -1, color, thickness)
+        self._draw_trapezoid(frame, self._smooth_mask, color, thickness)
         return frame
+
+    def _draw_trapezoid(self, frame, smooth_mask, color, thickness):
+        binary = (smooth_mask > 0.5).astype(np.uint8)
+        contours, _ = cv2.findContours(binary, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        if not contours:
+            return
+        largest = max(contours, key=cv2.contourArea)
+        trap = self._fit_trapezoid(largest)
+        if trap is not None:
+            cv2.drawContours(frame, [trap], -1, color, thickness)
+        else:
+            cv2.drawContours(frame, [largest], -1, color, thickness)
 
 
 class CameraStream:
