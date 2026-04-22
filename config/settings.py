@@ -29,6 +29,7 @@ XPLANE_APT_DAT = os.getenv("XPLANE_APT_DAT", "")  # path to X-Plane's apt.dat fi
 MODEL_PATH = os.getenv("MODEL_PATH", "models/runway_seg.pt")
 CONFIDENCE_THRESHOLD = float(os.getenv("CONFIDENCE_THRESHOLD", "0.5"))
 INFERENCE_SIZE = int(os.getenv("INFERENCE_SIZE", "640"))
+MASK_SMOOTHING_ALPHA = float(os.getenv("MASK_SMOOTHING_ALPHA", "0.4"))
 
 # --- Runway Reference ---
 RUNWAY_WIDTH_M = float(os.getenv("RUNWAY_WIDTH_M", "45.0"))  # standard runway width in meters

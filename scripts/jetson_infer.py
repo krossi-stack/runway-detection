@@ -21,6 +21,7 @@ from config.settings import (
     IMAGE_HEIGHT,
     IMAGE_WIDTH,
     INFERENCE_SIZE,
+    MASK_SMOOTHING_ALPHA,
     MODEL_PATH,
     RTSP_URL,
 )
@@ -44,6 +45,7 @@ class RunwaySegmenter:
         self.model = YOLO(model_path)
         self.conf = conf
         self.imgsz = imgsz
+        self._smooth_mask = None
 
     def predict(self, frame: np.ndarray):
         results = self.model.predict(
@@ -54,15 +56,27 @@ class RunwaySegmenter:
         )
         return results[0] if results else None
 
-    @staticmethod
-    def draw_mask(frame: np.ndarray, result, color=(0, 255, 0), thickness=2):
+    def draw_mask(self, frame: np.ndarray, result, color=(0, 255, 0), thickness=2):
         if result is None or result.masks is None:
+            if self._smooth_mask is not None:
+                self._smooth_mask *= (1 - MASK_SMOOTHING_ALPHA)
+                binary = (self._smooth_mask > 0.5).astype(np.uint8)
+                contours, _ = cv2.findContours(binary, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+                cv2.drawContours(frame, contours, -1, color, thickness)
             return frame
+        h, w = frame.shape[:2]
+        combined = np.zeros((h, w), dtype=np.float32)
         for mask_data in result.masks.data:
-            mask = mask_data.cpu().numpy().astype(np.uint8)
-            mask = cv2.resize(mask, (frame.shape[1], frame.shape[0]))
-            contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-            cv2.drawContours(frame, contours, -1, color, thickness)
+            mask = mask_data.cpu().numpy().astype(np.float32)
+            combined = np.maximum(combined, cv2.resize(mask, (w, h)))
+        if self._smooth_mask is None or self._smooth_mask.shape != (h, w):
+            self._smooth_mask = combined
+        else:
+            self._smooth_mask = (MASK_SMOOTHING_ALPHA * combined
+                                 + (1 - MASK_SMOOTHING_ALPHA) * self._smooth_mask)
+        binary = (self._smooth_mask > 0.5).astype(np.uint8)
+        contours, _ = cv2.findContours(binary, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        cv2.drawContours(frame, contours, -1, color, thickness)
         return frame
 
 
@@ -123,7 +137,7 @@ def main():
             if frame_count % detect_every == 0:
                 last_result = segmenter.predict(frame)
 
-            display = RunwaySegmenter.draw_mask(frame, last_result)
+            display = segmenter.draw_mask(frame, last_result)
 
             frame_count += 1
             elapsed = time.perf_counter() - fps_start
