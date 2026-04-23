@@ -35,6 +35,8 @@ def main():
         imgsz=args.imgsz,
         name=args.name,
         project="logs",
+        workers=8,
+        cache="disk",
         augment=True,
         hsv_h=0.015,
         hsv_s=0.5,

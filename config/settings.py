@@ -26,7 +26,7 @@ XPLANE_FOV_DEG = float(os.getenv("XPLANE_FOV_DEG", "80.0"))  # fallback if RREF 
 XPLANE_APT_DAT = os.getenv("XPLANE_APT_DAT", "")  # path to X-Plane's apt.dat file
 
 # --- Detection / Segmentation ---
-MODEL_PATH = os.getenv("MODEL_PATH", "models/runway_seg.pt")
+MODEL_PATH = os.getenv("MODEL_PATH", "models/runway_seg_lard.pt")
 CONFIDENCE_THRESHOLD = float(os.getenv("CONFIDENCE_THRESHOLD", "0.5"))
 INFERENCE_SIZE = int(os.getenv("INFERENCE_SIZE", "640"))
 MASK_SMOOTHING_ALPHA = float(os.getenv("MASK_SMOOTHING_ALPHA", "0.4"))

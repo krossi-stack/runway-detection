@@ -6,15 +6,17 @@ Real-time runway segmentation for aircraft approach/landing using Jetson Nano 8G
 
 - `config/settings.py` -- all configuration via environment variables with defaults
 - `scripts/xplane_capture.py` -- screen capture + X-Plane UDP telemetry recorder
-- `scripts/train.py` -- YOLOv8-seg training wrapper
+- `scripts/prepare_lard.py` -- download DEEL-AI/LARD_V2 from HuggingFace and convert to YOLO-seg format
+- `scripts/train.py` -- YOLOv11-seg training wrapper
 - `scripts/jetson_infer.py` -- real-time RTSP inference pipeline for Jetson (auto-prefers .engine over .pt)
 - `scripts/export_tensorrt.py` -- export .pt to TensorRT engine (run on Jetson)
 
 ## Training Data
 
+- DEEL-AI/LARD_V2 (~128k images across ArcGIS, Bing Maps, FlightSim, Google Earth Studio, X-Plane)
+- 4-corner runway annotations converted to YOLO-seg quadrilateral polygons by prepare_lard.py
 - Screen capture from X-Plane (not camera-filmed monitor)
 - X-Plane UDP telemetry synced via timestamps for altitude ground truth
-- Auto-labeling from X-Plane runway geometry (to be implemented)
 - Domain gap bridged with augmentations; validated with camera-filmed set
 
 ## Key Decisions
@@ -33,11 +35,14 @@ Real-time runway segmentation for aircraft approach/landing using Jetson Nano 8G
 ## Commands
 
 ```bash
+# Download + convert LARD_V2 dataset (~128k images, takes a while)
+python scripts/prepare_lard.py --out data/datasets/lard
+
 # Collect training data from X-Plane
 python scripts/xplane_capture.py
 
 # Train model
-python scripts/train.py --epochs 100 --batch 8
+python scripts/train.py --dataset data/datasets/lard/data.yaml --epochs 100 --batch 8
 
 # Export to TensorRT (run ON Jetson, takes 10-30 min)
 python scripts/export_tensorrt.py --imgsz 320 --fp16
