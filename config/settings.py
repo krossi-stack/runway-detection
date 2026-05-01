@@ -11,23 +11,25 @@ CAMERA_FPS = int(os.getenv("CAMERA_FPS", "30"))
 FOCAL_LENGTH_MM = float(os.getenv("FOCAL_LENGTH_MM", "4.0"))
 SENSOR_WIDTH_MM = float(os.getenv("SENSOR_WIDTH_MM", "6.17"))
 SENSOR_HEIGHT_MM = float(os.getenv("SENSOR_HEIGHT_MM", "4.55"))
-IMAGE_WIDTH = int(os.getenv("IMAGE_WIDTH", "1920"))
-IMAGE_HEIGHT = int(os.getenv("IMAGE_HEIGHT", "1080"))
+IMAGE_WIDTH = int(os.getenv("IMAGE_WIDTH", "3440"))
+IMAGE_HEIGHT = int(os.getenv("IMAGE_HEIGHT", "1440"))
 
 # --- X-Plane Data Collection ---
 XPLANE_UDP_IP = os.getenv("XPLANE_UDP_IP", "0.0.0.0")
-XPLANE_UDP_PORT = int(os.getenv("XPLANE_UDP_PORT", "49003"))
+XPLANE_UDP_PORT = int(os.getenv("XPLANE_UDP_PORT", "5501"))
 XPLANE_SEND_PORT = int(os.getenv("XPLANE_SEND_PORT", "49000"))  # X-Plane's listening port for RREF
 XPLANE_SCREEN_REGION = os.getenv("XPLANE_SCREEN_REGION", "")  # x,y,w,h or empty for full screen
-CAPTURE_FPS = float(os.getenv("CAPTURE_FPS", "0.1"))  # frames per second (0.1 = one frame every 10s)
-XPLANE_FOV_DEG = float(os.getenv("XPLANE_FOV_DEG", "80.0"))  # fallback if RREF read fails
+XPLANE_TITLE_BAR_PX = int(os.getenv("XPLANE_TITLE_BAR_PX", "23"))  # pixels of title bar at top of window
+CAPTURE_FPS = float(os.getenv("CAPTURE_FPS", "1"))  # frames per second (0.1 = one frame every 10s)
+XPLANE_FOV_DEG = float(os.getenv("XPLANE_FOV_DEG", "65.0"))
+XPLANE_FOV_V_DEG = float(os.getenv("XPLANE_FOV_V_DEG", "28.45"))
 
 # --- X-Plane Paths ---
 XPLANE_APT_DAT = os.getenv("XPLANE_APT_DAT", "")  # path to X-Plane's apt.dat file
 
 # --- Detection / Segmentation ---
 MODEL_PATH = os.getenv("MODEL_PATH", "models/runway_seg_lard.pt")
-CONFIDENCE_THRESHOLD = float(os.getenv("CONFIDENCE_THRESHOLD", "0.5"))
+CONFIDENCE_THRESHOLD = float(os.getenv("CONFIDENCE_THRESHOLD", "0.3"))
 INFERENCE_SIZE = int(os.getenv("INFERENCE_SIZE", "640"))
 MASK_SMOOTHING_ALPHA = float(os.getenv("MASK_SMOOTHING_ALPHA", "0.4"))
 

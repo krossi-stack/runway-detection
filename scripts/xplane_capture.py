@@ -180,16 +180,20 @@ def main():
                 att = tel.get(17, [0] * 8)
                 spd = tel.get(3, [0] * 8)
 
+                alt_msl_ft = pos[2]
+                terrain_ft = pos[4]
+                alt_agl_ft = alt_msl_ft - terrain_ft
+
                 writer.writerow([
                     frame_count, f"{timestamp:.6f}",
-                    f"{pos[0]:.8f}", f"{pos[1]:.8f}", f"{pos[2]:.2f}", f"{pos[5]:.2f}",
+                    f"{pos[0]:.8f}", f"{pos[1]:.8f}", f"{alt_msl_ft:.2f}", f"{alt_agl_ft:.2f}",
                     f"{att[0]:.4f}", f"{att[1]:.4f}", f"{att[2]:.4f}",
                     f"{spd[0]:.2f}",
                 ])
 
                 frame_count += 1
                 if frame_count % (CAPTURE_FPS * 5) == 0:
-                    alt_agl = pos[5]
+                    alt_agl = alt_agl_ft
                     print(f"  Frames: {frame_count}  |  AGL: {alt_agl:.0f} ft  |  HDG: {att[2]:.0f}")
 
                 elapsed = time.perf_counter() - t0
